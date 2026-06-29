@@ -1,0 +1,24 @@
+services:
+  # The "kitchen" — PocketBase backend (database + auth + admin panel)
+  - type: web
+    name: stdmgt-backend
+    runtime: docker
+    dockerfilePath: ./apps/pocketbase/Dockerfile
+    dockerContext: ./apps/pocketbase
+    plan: free
+    healthCheckPath: /api/health
+
+  # The "dining room" — the React website itself
+  - type: web
+    name: stdmgt-frontend
+    runtime: static
+    buildCommand: cd apps/web && npm install && npm run build
+    staticPublishPath: ./dist/apps/web
+    plan: free
+    envVars:
+      - key: VITE_POCKETBASE_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
